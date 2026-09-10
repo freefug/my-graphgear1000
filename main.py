@@ -72,7 +72,7 @@ if not movie_df.empty:
     st.plotly_chart(fig1, use_container_width=True)
 
     # '이 그래프로 알 수 있는 것' 안내 문구
-    st.info(f"💡 **이 그래프로 알 수 있는 것:** '{selected_movie}'의 개봉 초기 관객 집중도와 시간이 지남에 따른 관객 수 추이(주말/평일 패턴 등)를 한눈에 파악할 수 있습니다.")
+    st.info(f"💡 **이 그래프로 알 수 있는 것:** '{selected_movie}'인기가 많다.")
 
 st.divider()
 
