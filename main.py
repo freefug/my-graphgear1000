@@ -76,7 +76,7 @@ st.divider()
 # ==========================================
 # 구역 2: 상위 5개 영화 비교
 # ==========================================
-st.header("📌 구역 2: 총 관객수 상위 5개 영화 일관객 비교")
+st.header("📌 구역 2: 누적 관객수 상위 5개 영화 일관객 비교")
 
 # 일관객 합계가 가장 큰 상위 5개 영화 추출
 top5_movies = df.groupby('영화명')['일관객'].sum().nlargest(5).index.tolist()
@@ -96,12 +96,12 @@ if not top5_df.empty:
         markers=True
     )
 
-    # 마우스 오버(호버) 스타일 지정
+    # 마우스 오버(호버) 시 날짜와 관객수 표시
     fig2.update_traces(
         line=dict(width=2.5)
     )
     
-    # x unified 설정으로 같은 날짜에 있는 여러 영화의 관객수를 한 번에 비교
+    # hovertemplate을 각 영화명과 함께 나오도록 설정
     fig2.update_layout(
         hovermode="x unified",
         legend_title_text='영화명 (클릭하여 켜기/끄기)'
@@ -118,7 +118,59 @@ else:
 st.divider()
 
 # ==========================================
-# 구역 3: 추가 그래프 영역
+# 구역 3: 날짜별 10위권 일관객 합계 (영역 그래프)
 # ==========================================
-st.header("📌 구역 3: (새로운 그래프가 추가될 자리)")
+st.header("📌 구역 3: 날짜별 10위권 일관객 합계")
+
+# 날짜별로 일관객 합계 계산
+daily_total = df.groupby('날짜', as_index=False)['일관객'].sum()
+
+if not daily_total.empty:
+    # 플롯리 영역 그래프 생성
+    fig3 = px.area(
+        daily_total,
+        x='날짜',
+        y='일관객',
+        title="날짜별 10위권 일관객 총합 추이",
+        labels={'날짜': '날짜', '일관객': '총 일관객 수(명)'}
+    )
+    
+    # 합계가 가장 컸던 날 3일 추출
+    top3_days = daily_total.nlargest(3, '일관객')
+    
+    # 상위 3일에 어노테이션(텍스트와 화살표) 추가
+    for _, row in top3_days.iterrows():
+        fig3.add_annotation(
+            x=row['날짜'],
+            y=row['일관객'],
+            text=row['날짜'].strftime('%Y-%m-%d'),  # 날짜를 문자열로 표시
+            showarrow=True,
+            arrowhead=2,
+            arrowsize=1,
+            arrowwidth=2,
+            ax=0,
+            ay=-40  # 텍스트를 위로 조금 띄워서 표시
+        )
+
+    # 마우스 오버(호버) 시 날짜와 총 관객수 표시
+    fig3.update_traces(
+        hovertemplate="<b>날짜:</b> %{x|%Y-%m-%d}<br><b>총 일관객:</b> %{y:,}명<extra></extra>"
+    )
+    
+    fig3.update_layout(hovermode="x unified")
+
+    # 그래프 출력
+    st.plotly_chart(fig3, use_container_width=True)
+
+    # 그래프 아래 설명 문구 자리
+    st.info("💡 **이 그래프로 알 수 있는 것:** ")
+else:
+    st.warning("데이터가 없습니다.")
+
+st.divider()
+
+# ==========================================
+# 구역 4: 추가 그래프 영역
+# ==========================================
+st.header("📌 구역 4: (새로운 그래프가 추가될 자리)")
 st.caption("앞으로 추가될 그래프들은 이 아래로 구역을 나누어 배치됩니다.")
