@@ -212,7 +212,60 @@ else:
 st.divider()
 
 # ==========================================
-# 구역 5: 추가 그래프 영역
+# 구역 5: 월×요일별 일관객 합계 (히트맵)
 # ==========================================
-st.header("📌 구역 5: (새로운 그래프가 추가될 자리)")
+st.header("📌 구역 5: 월×요일별 일관객 합계 히트맵")
+
+# 월과 요일 정보 추출
+df_heatmap = df.copy()
+df_heatmap['월'] = df_heatmap['날짜'].dt.month.astype(str) + "월"
+
+# 요일 변환 (월요일~일요일)
+days_map = {0: '월요일', 1: '화요일', 2: '수요일', 3: '목요일', 4: '금요일', 5: '토요일', 6: '일요일'}
+df_heatmap['요일'] = df_heatmap['날짜'].dt.dayofweek.map(days_map)
+
+# 지정할 순서
+day_order = ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일']
+
+# 월x요일 피벗 테이블 생성
+pivot_df = df_heatmap.pivot_table(index='월', columns='요일', values='일관객', aggfunc='sum').fillna(0)
+
+# 요일 컬럼 순서 고정 (월~일)
+pivot_df = pivot_df.reindex(columns=day_order)
+
+# 월 순서 오름차순 정렬 (1월~12월 순)
+month_order = [f"{i}월" for i in range(1, 13) if f"{i}월" in pivot_df.index]
+pivot_df = pivot_df.reindex(index=month_order)
+
+if not pivot_df.empty:
+    # 플롯리 히트맵 생성
+    fig5 = px.imshow(
+        pivot_df,
+        labels=dict(x="요일", y="월", color="총 관객 수(명)"),
+        x=day_order,
+        y=pivot_df.index,
+        color_continuous_scale="Blues",  # 관객이 많을수록 진한 색상
+        title="월×요일별 일관객 합계 히트맵",
+        text_auto=",.0f"  # 셀 내 수치 표시 (천 단위 쉼표)
+    )
+    
+    # 마우스 오버(호버) 설정
+    fig5.update_traces(
+        hovertemplate="<b>%{y} %{x}</b><br>총 관객 수: %{z:,}명<extra></extra>"
+    )
+
+    # 그래프 출력
+    st.plotly_chart(fig5, use_container_width=True)
+
+    # 그래프 아래 설명 문구 자리
+    st.info("💡 **이 그래프로 알 수 있는 것:** ")
+else:
+    st.warning("데이터가 없습니다.")
+
+st.divider()
+
+# ==========================================
+# 구역 6: 추가 그래프 영역
+# ==========================================
+st.header("📌 구역 6: (새로운 그래프가 추가될 자리)")
 st.caption("앞으로 추가될 그래프들은 이 아래로 구역을 나누어 배치됩니다.")
